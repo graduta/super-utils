@@ -7,15 +7,15 @@ buildscript {
     }
 }
 
-allprojects {
-    repositories {
-        jcenter()
-    }
-}
-
 @SuppressWarnings("GroovyUnusedDeclaration")
 def getSecrets() {
 	def Properties secrets = new Properties()
-	secrets.load(new FileInputStream(new File('./secrets.properties')))
+	try {
+		// run from IDE
+		secrets.load(new FileInputStream(new File('' + projectDir + '/secrets.properties')))
+	} catch (NullPointerException ignored) {
+		// run from command line
+		secrets.load(new FileInputStream(new File('./secrets.properties')))
+	}
 	return secrets
 }

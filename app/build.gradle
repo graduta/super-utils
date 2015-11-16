@@ -1,0 +1,100 @@
+buildscript {
+	repositories {
+		jcenter()
+	}
+
+	dependencies {
+		classpath 'com.android.tools.build:gradle:1.1.1'
+		classpath 'me.tatarka:gradle-retrolambda:3.2.3'
+		classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
+	}
+
+	configurations.classpath.exclude group: 'com.android.tools.external.lombok'
+}
+
+// load secrets from properties file
+def secrets = getSecrets()
+
+// apply android plugin, using configuration below
+apply plugin: 'com.android.application'
+
+// apply retrolambda plugin
+apply plugin: 'me.tatarka.retrolambda'
+
+// android configuration
+android {
+	// required by retrolambda
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
+	}
+
+	compileSdkVersion 23
+
+	buildToolsVersion "23.0.1"
+
+	defaultConfig {
+		applicationId "uk.co.markormesher.superutils"
+
+		minSdkVersion 12
+		targetSdkVersion 23
+
+		versionCode 1
+		versionName "0.1"
+
+		testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+	}
+
+	signingConfigs {
+		main {
+			storeFile file(secrets['KEYSTORE_PATH'])
+			storePassword secrets['KEYSTORE_PASSWORD']
+			keyAlias secrets['KEYSTORE_KEY_ALIAS']
+			keyPassword secrets['KEYSTORE_KEY_PASSWORD']
+		}
+	}
+
+	buildTypes {
+		release {
+			// signing
+			//noinspection GroovyAssignabilityCheck
+			signingConfig signingConfigs.main
+
+			// minify
+			minifyEnabled true
+			proguardFile 'proguard-rules.pro'
+
+			// debug
+			buildConfigField "boolean", "DEBUG_MODE", "false"
+			debuggable false
+		}
+
+		debug {
+			// signing
+			//noinspection GroovyAssignabilityCheck
+			signingConfig signingConfigs.main
+
+			// minify
+			minifyEnabled false
+
+			// debug
+			buildConfigField "boolean", "DEBUG_MODE", "true"
+			debuggable true
+		}
+	}
+}
+
+repositories {
+	jcenter()
+}
+
+dependencies {
+	compile fileTree(include: ['*.jar'], dir: 'libs')
+	compile 'com.android.support:support-v4:23.1.1'
+	compile 'com.android.support:appcompat-v7:23.1.1'
+
+	androidTestCompile 'junit:junit:4.12'
+	androidTestCompile('com.android.support.test:testing-support-lib:0.1') {
+		exclude group: 'junit'
+	}
+}
